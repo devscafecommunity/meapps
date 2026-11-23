@@ -12,8 +12,13 @@ dependencies:
   drift_flutter: ^0.3.1
   flutter:
     sdk: flutter
+  flutter_local_notifications: ^23.0.4
+  flutter_localizations:
+    sdk: flutter
+  flutter_timezone: ^5.1.1
   meapps_ui:
     path: ../../packages/meapps_ui
+  timezone: ^0.11.2
 
 dev_dependencies:
   flutter_test:
@@ -21,6 +26,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.35.3
   build_runner: ^2.17.1
+  sqlite3: ^3.9.2
 
 flutter:
   uses-material-design: true

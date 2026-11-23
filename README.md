@@ -4,7 +4,7 @@ Suite de apps simples do dia a dia em Flutter, **local first**.
 
 ```
 packages/meapps_ui   design system partilhado (tokens, MeAppTheme, widgets)
-apps/meremind        calendario + notas + lembretes (mockups)
+apps/meremind        calendario + notas + lembretes
 ```
 
 Pub workspace: `flutter pub get` na raiz resolve tudo.

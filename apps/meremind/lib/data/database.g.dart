@@ -58,6 +58,21 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _archivedMeta = const VerificationMeta(
+    'archived',
+  );
+  @override
+  late final GeneratedColumn<bool> archived = GeneratedColumn<bool>(
+    'archived',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("archived" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _toneMeta = const VerificationMeta('tone');
   @override
   late final GeneratedColumn<int> tone = GeneratedColumn<int>(
@@ -68,12 +83,12 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _reminderMeta = const VerificationMeta(
-    'reminder',
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
   );
   @override
-  late final GeneratedColumn<DateTime> reminder = GeneratedColumn<DateTime>(
-    'reminder',
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
     aliasedName,
     true,
     type: DriftSqlType.dateTime,
@@ -86,8 +101,9 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
     body,
     tag,
     pinned,
+    archived,
     tone,
-    reminder,
+    updatedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -132,16 +148,22 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
         pinned.isAcceptableOrUnknown(data['pinned']!, _pinnedMeta),
       );
     }
+    if (data.containsKey('archived')) {
+      context.handle(
+        _archivedMeta,
+        archived.isAcceptableOrUnknown(data['archived']!, _archivedMeta),
+      );
+    }
     if (data.containsKey('tone')) {
       context.handle(
         _toneMeta,
         tone.isAcceptableOrUnknown(data['tone']!, _toneMeta),
       );
     }
-    if (data.containsKey('reminder')) {
+    if (data.containsKey('updated_at')) {
       context.handle(
-        _reminderMeta,
-        reminder.isAcceptableOrUnknown(data['reminder']!, _reminderMeta),
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
     }
     return context;
@@ -173,13 +195,17 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
         DriftSqlType.bool,
         data['${effectivePrefix}pinned'],
       )!,
+      archived: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}archived'],
+      )!,
       tone: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}tone'],
       )!,
-      reminder: attachedDatabase.typeMapping.read(
+      updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
-        data['${effectivePrefix}reminder'],
+        data['${effectivePrefix}updated_at'],
       ),
     );
   }
@@ -196,18 +222,22 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
   final String body;
   final String? tag;
   final bool pinned;
+  final bool archived;
 
   /// Index into `MeTone.values`.
   final int tone;
-  final DateTime? reminder;
+
+  /// Last edit; null for rows created before schema v2.
+  final DateTime? updatedAt;
   const NoteRow({
     required this.id,
     required this.title,
     required this.body,
     this.tag,
     required this.pinned,
+    required this.archived,
     required this.tone,
-    this.reminder,
+    this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -219,9 +249,10 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       map['tag'] = Variable<String>(tag);
     }
     map['pinned'] = Variable<bool>(pinned);
+    map['archived'] = Variable<bool>(archived);
     map['tone'] = Variable<int>(tone);
-    if (!nullToAbsent || reminder != null) {
-      map['reminder'] = Variable<DateTime>(reminder);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
     }
     return map;
   }
@@ -233,10 +264,11 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       body: Value(body),
       tag: tag == null && nullToAbsent ? const Value.absent() : Value(tag),
       pinned: Value(pinned),
+      archived: Value(archived),
       tone: Value(tone),
-      reminder: reminder == null && nullToAbsent
+      updatedAt: updatedAt == null && nullToAbsent
           ? const Value.absent()
-          : Value(reminder),
+          : Value(updatedAt),
     );
   }
 
@@ -251,8 +283,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       body: serializer.fromJson<String>(json['body']),
       tag: serializer.fromJson<String?>(json['tag']),
       pinned: serializer.fromJson<bool>(json['pinned']),
+      archived: serializer.fromJson<bool>(json['archived']),
       tone: serializer.fromJson<int>(json['tone']),
-      reminder: serializer.fromJson<DateTime?>(json['reminder']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
   }
   @override
@@ -264,8 +297,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       'body': serializer.toJson<String>(body),
       'tag': serializer.toJson<String?>(tag),
       'pinned': serializer.toJson<bool>(pinned),
+      'archived': serializer.toJson<bool>(archived),
       'tone': serializer.toJson<int>(tone),
-      'reminder': serializer.toJson<DateTime?>(reminder),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
   }
 
@@ -275,16 +309,18 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     String? body,
     Value<String?> tag = const Value.absent(),
     bool? pinned,
+    bool? archived,
     int? tone,
-    Value<DateTime?> reminder = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
   }) => NoteRow(
     id: id ?? this.id,
     title: title ?? this.title,
     body: body ?? this.body,
     tag: tag.present ? tag.value : this.tag,
     pinned: pinned ?? this.pinned,
+    archived: archived ?? this.archived,
     tone: tone ?? this.tone,
-    reminder: reminder.present ? reminder.value : this.reminder,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
   NoteRow copyWithCompanion(NotesCompanion data) {
     return NoteRow(
@@ -293,8 +329,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       body: data.body.present ? data.body.value : this.body,
       tag: data.tag.present ? data.tag.value : this.tag,
       pinned: data.pinned.present ? data.pinned.value : this.pinned,
+      archived: data.archived.present ? data.archived.value : this.archived,
       tone: data.tone.present ? data.tone.value : this.tone,
-      reminder: data.reminder.present ? data.reminder.value : this.reminder,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
 
@@ -306,14 +343,16 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
           ..write('body: $body, ')
           ..write('tag: $tag, ')
           ..write('pinned: $pinned, ')
+          ..write('archived: $archived, ')
           ..write('tone: $tone, ')
-          ..write('reminder: $reminder')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, body, tag, pinned, tone, reminder);
+  int get hashCode =>
+      Object.hash(id, title, body, tag, pinned, archived, tone, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -323,8 +362,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
           other.body == this.body &&
           other.tag == this.tag &&
           other.pinned == this.pinned &&
+          other.archived == this.archived &&
           other.tone == this.tone &&
-          other.reminder == this.reminder);
+          other.updatedAt == this.updatedAt);
 }
 
 class NotesCompanion extends UpdateCompanion<NoteRow> {
@@ -333,8 +373,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
   final Value<String> body;
   final Value<String?> tag;
   final Value<bool> pinned;
+  final Value<bool> archived;
   final Value<int> tone;
-  final Value<DateTime?> reminder;
+  final Value<DateTime?> updatedAt;
   final Value<int> rowid;
   const NotesCompanion({
     this.id = const Value.absent(),
@@ -342,8 +383,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     this.body = const Value.absent(),
     this.tag = const Value.absent(),
     this.pinned = const Value.absent(),
+    this.archived = const Value.absent(),
     this.tone = const Value.absent(),
-    this.reminder = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   NotesCompanion.insert({
@@ -352,8 +394,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     this.body = const Value.absent(),
     this.tag = const Value.absent(),
     this.pinned = const Value.absent(),
+    this.archived = const Value.absent(),
     this.tone = const Value.absent(),
-    this.reminder = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        title = Value(title);
@@ -363,8 +406,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     Expression<String>? body,
     Expression<String>? tag,
     Expression<bool>? pinned,
+    Expression<bool>? archived,
     Expression<int>? tone,
-    Expression<DateTime>? reminder,
+    Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -373,8 +417,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
       if (body != null) 'body': body,
       if (tag != null) 'tag': tag,
       if (pinned != null) 'pinned': pinned,
+      if (archived != null) 'archived': archived,
       if (tone != null) 'tone': tone,
-      if (reminder != null) 'reminder': reminder,
+      if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -385,8 +430,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     Value<String>? body,
     Value<String?>? tag,
     Value<bool>? pinned,
+    Value<bool>? archived,
     Value<int>? tone,
-    Value<DateTime?>? reminder,
+    Value<DateTime?>? updatedAt,
     Value<int>? rowid,
   }) {
     return NotesCompanion(
@@ -395,8 +441,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
       body: body ?? this.body,
       tag: tag ?? this.tag,
       pinned: pinned ?? this.pinned,
+      archived: archived ?? this.archived,
       tone: tone ?? this.tone,
-      reminder: reminder ?? this.reminder,
+      updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -419,11 +466,14 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     if (pinned.present) {
       map['pinned'] = Variable<bool>(pinned.value);
     }
+    if (archived.present) {
+      map['archived'] = Variable<bool>(archived.value);
+    }
     if (tone.present) {
       map['tone'] = Variable<int>(tone.value);
     }
-    if (reminder.present) {
-      map['reminder'] = Variable<DateTime>(reminder.value);
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -439,8 +489,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
           ..write('body: $body, ')
           ..write('tag: $tag, ')
           ..write('pinned: $pinned, ')
+          ..write('archived: $archived, ')
           ..write('tone: $tone, ')
-          ..write('reminder: $reminder, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1192,12 +1243,221 @@ class RemindersCompanion extends UpdateCompanion<ReminderRow> {
   }
 }
 
+class $SettingsTable extends Settings
+    with TableInfo<$SettingsTable, SettingRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [key, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SettingRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  SettingRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SettingRow(
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      )!,
+    );
+  }
+
+  @override
+  $SettingsTable createAlias(String alias) {
+    return $SettingsTable(attachedDatabase, alias);
+  }
+}
+
+class SettingRow extends DataClass implements Insertable<SettingRow> {
+  final String key;
+  final String value;
+  const SettingRow({required this.key, required this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    map['value'] = Variable<String>(value);
+    return map;
+  }
+
+  SettingsCompanion toCompanion(bool nullToAbsent) {
+    return SettingsCompanion(key: Value(key), value: Value(value));
+  }
+
+  factory SettingRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SettingRow(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String>(value),
+    };
+  }
+
+  SettingRow copyWith({String? key, String? value}) =>
+      SettingRow(key: key ?? this.key, value: value ?? this.value);
+  SettingRow copyWithCompanion(SettingsCompanion data) {
+    return SettingRow(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettingRow(')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SettingRow &&
+          other.key == this.key &&
+          other.value == this.value);
+}
+
+class SettingsCompanion extends UpdateCompanion<SettingRow> {
+  final Value<String> key;
+  final Value<String> value;
+  final Value<int> rowid;
+  const SettingsCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SettingsCompanion.insert({
+    required String key,
+    required String value,
+    this.rowid = const Value.absent(),
+  }) : key = Value(key),
+       value = Value(value);
+  static Insertable<SettingRow> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SettingsCompanion copyWith({
+    Value<String>? key,
+    Value<String>? value,
+    Value<int>? rowid,
+  }) {
+    return SettingsCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettingsCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $NotesTable notes = $NotesTable(this);
   late final $ChecklistItemsTable checklistItems = $ChecklistItemsTable(this);
   late final $RemindersTable reminders = $RemindersTable(this);
+  late final $SettingsTable settings = $SettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1206,6 +1466,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     notes,
     checklistItems,
     reminders,
+    settings,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -1225,8 +1486,9 @@ typedef $$NotesTableCreateCompanionBuilder = NotesCompanion Function({
   Value<String> body,
   Value<String?> tag,
   Value<bool> pinned,
+  Value<bool> archived,
   Value<int> tone,
-  Value<DateTime?> reminder,
+  Value<DateTime?> updatedAt,
   Value<int> rowid,
 });
 typedef $$NotesTableUpdateCompanionBuilder = NotesCompanion Function({
@@ -1235,8 +1497,9 @@ typedef $$NotesTableUpdateCompanionBuilder = NotesCompanion Function({
   Value<String> body,
   Value<String?> tag,
   Value<bool> pinned,
+  Value<bool> archived,
   Value<int> tone,
-  Value<DateTime?> reminder,
+  Value<DateTime?> updatedAt,
   Value<int> rowid,
 });
 
@@ -1296,13 +1559,18 @@ class $$NotesTableFilterComposer extends Composer<_$AppDatabase, $NotesTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get archived => $composableBuilder(
+    column: $table.archived,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get tone => $composableBuilder(
     column: $table.tone,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get reminder => $composableBuilder(
-    column: $table.reminder,
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1366,13 +1634,18 @@ class $$NotesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get archived => $composableBuilder(
+    column: $table.archived,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get tone => $composableBuilder(
     column: $table.tone,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get reminder => $composableBuilder(
-    column: $table.reminder,
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -1401,11 +1674,14 @@ class $$NotesTableAnnotationComposer
   GeneratedColumn<bool> get pinned =>
       $composableBuilder(column: $table.pinned, builder: (column) => column);
 
+  GeneratedColumn<bool> get archived =>
+      $composableBuilder(column: $table.archived, builder: (column) => column);
+
   GeneratedColumn<int> get tone =>
       $composableBuilder(column: $table.tone, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get reminder =>
-      $composableBuilder(column: $table.reminder, builder: (column) => column);
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
   Expression<T> checklistItemsRefs<T extends Object>(
     Expression<T> Function($$ChecklistItemsTableAnnotationComposer a) f,
@@ -1466,8 +1742,9 @@ class $$NotesTableTableManager
                 Value<String> body = const Value.absent(),
                 Value<String?> tag = const Value.absent(),
                 Value<bool> pinned = const Value.absent(),
+                Value<bool> archived = const Value.absent(),
                 Value<int> tone = const Value.absent(),
-                Value<DateTime?> reminder = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => NotesCompanion(
                 id: id,
@@ -1475,8 +1752,9 @@ class $$NotesTableTableManager
                 body: body,
                 tag: tag,
                 pinned: pinned,
+                archived: archived,
                 tone: tone,
-                reminder: reminder,
+                updatedAt: updatedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1486,8 +1764,9 @@ class $$NotesTableTableManager
                 Value<String> body = const Value.absent(),
                 Value<String?> tag = const Value.absent(),
                 Value<bool> pinned = const Value.absent(),
+                Value<bool> archived = const Value.absent(),
                 Value<int> tone = const Value.absent(),
-                Value<DateTime?> reminder = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => NotesCompanion.insert(
                 id: id,
@@ -1495,8 +1774,9 @@ class $$NotesTableTableManager
                 body: body,
                 tag: tag,
                 pinned: pinned,
+                archived: archived,
                 tone: tone,
-                reminder: reminder,
+                updatedAt: updatedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2098,6 +2378,143 @@ typedef $$RemindersTableProcessedTableManager =
       ReminderRow,
       PrefetchHooks Function()
     >;
+typedef $$SettingsTableCreateCompanionBuilder = SettingsCompanion Function({
+  required String key,
+  required String value,
+  Value<int> rowid,
+});
+typedef $$SettingsTableUpdateCompanionBuilder = SettingsCompanion Function({
+  Value<String> key,
+  Value<String> value,
+  Value<int> rowid,
+});
+
+class $$SettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
+class $$SettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SettingsTable,
+          SettingRow,
+          $$SettingsTableFilterComposer,
+          $$SettingsTableOrderingComposer,
+          $$SettingsTableAnnotationComposer,
+          $$SettingsTableCreateCompanionBuilder,
+          $$SettingsTableUpdateCompanionBuilder,
+          (
+            SettingRow,
+            BaseReferences<_$AppDatabase, $SettingsTable, SettingRow>,
+          ),
+          SettingRow,
+          PrefetchHooks Function()
+        > {
+  $$SettingsTableTableManager(_$AppDatabase db, $SettingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> key = const Value.absent(),
+            Value<String> value = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => SettingsCompanion(key: key, value: value, rowid: rowid),
+          createCompanionCallback: ({
+            required String key,
+            required String value,
+            Value<int> rowid = const Value.absent(),
+          }) => SettingsCompanion.insert(key: key, value: value, rowid: rowid),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SettingsTable, SettingRow>(table),
+                  BaseReferences<_$AppDatabase, $SettingsTable, SettingRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SettingsTable,
+      SettingRow,
+      $$SettingsTableFilterComposer,
+      $$SettingsTableOrderingComposer,
+      $$SettingsTableAnnotationComposer,
+      $$SettingsTableCreateCompanionBuilder,
+      $$SettingsTableUpdateCompanionBuilder,
+      (SettingRow, BaseReferences<_$AppDatabase, $SettingsTable, SettingRow>),
+      SettingRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2108,4 +2525,6 @@ class $AppDatabaseManager {
       $$ChecklistItemsTableTableManager(_db, _db.checklistItems);
   $$RemindersTableTableManager get reminders =>
       $$RemindersTableTableManager(_db, _db.reminders);
+  $$SettingsTableTableManager get settings =>
+      $$SettingsTableTableManager(_db, _db.settings);
 }

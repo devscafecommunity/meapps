@@ -18,11 +18,10 @@ class RemindersScreen extends StatelessWidget {
     final overdue = all
         .where((r) => !r.done && r.when.isBefore(today))
         .toList();
+    final tomorrow = DateTime(today.year, today.month, today.day + 1);
     final todayItems = all.where((r) => isSameDay(r.when, today)).toList();
     final upcoming = all
-        .where(
-          (r) => !r.done && r.when.isAfter(today.add(const Duration(days: 1))),
-        )
+        .where((r) => !r.done && !r.when.isBefore(tomorrow))
         .toList();
     final done = all.where((r) => r.done && !isSameDay(r.when, today)).toList();
 
@@ -45,14 +44,22 @@ class RemindersScreen extends StatelessWidget {
                 for (final r in items)
                   ReminderTile(
                     reminder: r,
+                    store: store,
                     showDay: showDay,
-                    overdue: overdue,
-                    onToggle: () => store.toggle(r),
+                    overdue: overdue || (!r.done && r.when.isBefore(now)),
                   ),
               ],
             ),
           ),
         ],
+      );
+    }
+
+    if (all.isEmpty) {
+      return const MeEmptyState(
+        icon: Icons.notifications_none,
+        title: 'Sem lembretes',
+        message: 'Toque em "Novo lembrete" para criar o primeiro.',
       );
     }
 

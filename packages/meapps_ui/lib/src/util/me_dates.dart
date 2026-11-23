@@ -27,6 +27,18 @@ String formatTime(DateTime d) =>
 String capitalize(String s) =>
     s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
+/// Relative past time: "agora", "há 5 min", "há 3 h", "ontem", "12 nov".
+String formatAgo(DateTime d, {DateTime? now}) {
+  final n = now ?? DateTime.now();
+  final diff = n.difference(d);
+  if (diff.inMinutes < 1) return 'agora';
+  if (diff.inHours < 1) return 'há ${diff.inMinutes} min';
+  if (isSameDay(d, n)) return 'há ${diff.inHours} h';
+  if (dateOnly(n).difference(dateOnly(d)).inDays == 1) return 'ontem';
+  final year = d.year == n.year ? '' : ' ${d.year}';
+  return '${d.day} ${ptMonthsShort[d.month - 1]}$year';
+}
+
 /// "Hoje", "Amanhã" or "qui, 12 nov".
 String formatDayLabel(DateTime d, {DateTime? now}) {
   final today = dateOnly(now ?? DateTime.now());

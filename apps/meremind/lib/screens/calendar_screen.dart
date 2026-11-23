@@ -5,25 +5,36 @@ import '../data/app_store.dart';
 import '../widgets/reminder_tile.dart';
 
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key, required this.store});
+  const CalendarScreen({
+    super.key,
+    required this.store,
+    required this.selected,
+    required this.onSelected,
+  });
 
   final AppStore store;
+
+  /// Owned by the shell so "Novo lembrete" can default to this day.
+  final DateTime selected;
+  final ValueChanged<DateTime> onSelected;
 
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  late DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
-  late DateTime _selected = dateOnly(DateTime.now());
+  late DateTime _month = DateTime(widget.selected.year, widget.selected.month);
+
+  DateTime get _selected => widget.selected;
 
   void _shift(int delta) =>
       setState(() => _month = DateTime(_month.year, _month.month + delta));
 
-  void _today() => setState(() {
-    _selected = dateOnly(DateTime.now());
-    _month = DateTime(_selected.year, _selected.month);
-  });
+  void _today() {
+    final today = dateOnly(DateTime.now());
+    setState(() => _month = DateTime(today.year, today.month));
+    widget.onSelected(today);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,12 +79,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
           child: MeMonthGrid(
             month: _month,
             selected: _selected,
-            onSelected: (d) => setState(() => _selected = d),
+            onSelected: (d) {
+              if (d.month != _month.month || d.year != _month.year) {
+                setState(() => _month = DateTime(d.year, d.month));
+              }
+              widget.onSelected(d);
+            },
             markerCount: (d) => widget.store.remindersOn(d).length,
           ),
         ),
         const SizedBox(height: MeSpacing.sm),
-        MeSectionHeader(label, trailing: Text('${items.length} lembretes')),
+        MeSectionHeader(
+          label,
+          trailing: Text(
+            items.length == 1 ? '1 lembrete' : '${items.length} lembretes',
+          ),
+        ),
         if (items.isEmpty)
           const MeEmptyState(
             icon: Icons.event_available_outlined,
@@ -81,8 +102,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
             message: 'Sem lembretes para este dia.',
           )
         else
-          for (final r in items)
-            ReminderTile(reminder: r, onToggle: () => widget.store.toggle(r)),
+          MeCard(
+            padding: const EdgeInsets.symmetric(vertical: MeSpacing.xs),
+            child: Column(
+              children: [
+                for (final r in items)
+                  ReminderTile(
+                    reminder: r,
+                    store: widget.store,
+                    overdue: !r.done && r.when.isBefore(DateTime.now()),
+                  ),
+              ],
+            ),
+          ),
       ],
     );
   }
