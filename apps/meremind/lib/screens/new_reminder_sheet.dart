@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
-import '../mock/mock_store.dart';
+import '../data/app_store.dart';
 
-Future<void> showNewReminderSheet(BuildContext context, MockStore store) {
+Future<void> showNewReminderSheet(BuildContext context, AppStore store) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -14,7 +14,7 @@ Future<void> showNewReminderSheet(BuildContext context, MockStore store) {
 class _NewReminderSheet extends StatefulWidget {
   const _NewReminderSheet({required this.store});
 
-  final MockStore store;
+  final AppStore store;
 
   @override
   State<_NewReminderSheet> createState() => _NewReminderSheetState();
@@ -25,7 +25,12 @@ class _NewReminderSheetState extends State<_NewReminderSheet> {
   int _when = 0;
   Repeat _repeat = Repeat.never;
 
-  static const _options = ['Hoje 18:00', 'Amanhã 09:00', 'Próx. semana', 'Escolher…'];
+  static const _options = [
+    'Hoje 18:00',
+    'Amanhã 09:00',
+    'Próx. semana',
+    'Escolher…',
+  ];
 
   DateTime _resolve() {
     final n = DateTime.now();
@@ -97,7 +102,7 @@ class _NewReminderSheetState extends State<_NewReminderSheet> {
                 final title = _title.text.trim();
                 if (title.isEmpty) return;
                 widget.store.add(
-                  MockReminder(
+                  Reminder(
                     id: 'r${DateTime.now().microsecondsSinceEpoch}',
                     title: title,
                     when: _resolve(),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
-import '../mock/mock_store.dart';
+import '../data/app_store.dart';
 
 class ReminderTile extends StatelessWidget {
   const ReminderTile({
@@ -12,7 +12,7 @@ class ReminderTile extends StatelessWidget {
     this.overdue = false,
   });
 
-  final MockReminder reminder;
+  final Reminder reminder;
   final VoidCallback onToggle;
   final bool showDay;
   final bool overdue;

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
-import '../mock/mock_store.dart';
+import '../data/app_store.dart';
 import '../widgets/reminder_tile.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key, required this.store});
 
-  final MockStore store;
+  final AppStore store;
 
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
@@ -21,21 +21,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
       setState(() => _month = DateTime(_month.year, _month.month + delta));
 
   void _today() => setState(() {
-        _selected = dateOnly(DateTime.now());
-        _month = DateTime(_selected.year, _selected.month);
-      });
+    _selected = dateOnly(DateTime.now());
+    _month = DateTime(_selected.year, _selected.month);
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final items = widget.store.remindersOn(_selected);
-    final label = '${capitalize(ptWeekdays[_selected.weekday - 1])}, '
+    final label =
+        '${capitalize(ptWeekdays[_selected.weekday - 1])}, '
         '${_selected.day} de ${ptMonths[_selected.month - 1]}';
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        MeSpacing.md, 0, MeSpacing.md, 96,
-      ),
+      padding: const EdgeInsets.fromLTRB(MeSpacing.md, 0, MeSpacing.md, 96),
       children: [
         Row(
           children: [
@@ -83,10 +82,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           )
         else
           for (final r in items)
-            ReminderTile(
-              reminder: r,
-              onToggle: () => widget.store.toggle(r),
-            ),
+            ReminderTile(reminder: r, onToggle: () => widget.store.toggle(r)),
       ],
     );
   }

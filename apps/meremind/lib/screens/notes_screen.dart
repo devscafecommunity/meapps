@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
-import '../mock/mock_store.dart';
+import '../data/app_store.dart';
 import 'note_editor_screen.dart';
 
 class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key, required this.store});
 
-  final MockStore store;
+  final AppStore store;
 
   @override
   State<NotesScreen> createState() => _NotesScreenState();
@@ -66,12 +66,12 @@ class _NotesScreenState extends State<NotesScreen> {
           ),
         if (pinned.isNotEmpty) ...[
           const MeSectionHeader('FIXADAS'),
-          _Masonry(notes: pinned),
+          _Masonry(notes: pinned, store: widget.store),
         ],
         if (others.isNotEmpty) ...[
           if (pinned.isNotEmpty) const MeSectionHeader('OUTRAS'),
           if (pinned.isEmpty) const SizedBox(height: MeSpacing.md),
-          _Masonry(notes: others),
+          _Masonry(notes: others, store: widget.store),
         ],
       ],
     );
@@ -80,34 +80,40 @@ class _NotesScreenState extends State<NotesScreen> {
 
 /// Two-column staggered layout without extra dependencies.
 class _Masonry extends StatelessWidget {
-  const _Masonry({required this.notes});
+  const _Masonry({required this.notes, required this.store});
 
-  final List<MockNote> notes;
+  final List<Note> notes;
+  final AppStore store;
 
   @override
   Widget build(BuildContext context) {
     Widget column(int start) => Expanded(
-          child: Column(
-            children: [
-              for (var i = start; i < notes.length; i += 2)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: MeSpacing.sm + 2),
-                  child: NoteCard(note: notes[i]),
-                ),
-            ],
-          ),
-        );
+      child: Column(
+        children: [
+          for (var i = start; i < notes.length; i += 2)
+            Padding(
+              padding: const EdgeInsets.only(bottom: MeSpacing.sm + 2),
+              child: NoteCard(note: notes[i], store: store),
+            ),
+        ],
+      ),
+    );
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [column(0), const SizedBox(width: MeSpacing.sm + 2), column(1)],
+      children: [
+        column(0),
+        const SizedBox(width: MeSpacing.sm + 2),
+        column(1),
+      ],
     );
   }
 }
 
 class NoteCard extends StatelessWidget {
-  const NoteCard({super.key, required this.note});
+  const NoteCard({super.key, required this.note, required this.store});
 
-  final MockNote note;
+  final Note note;
+  final AppStore store;
 
   @override
   Widget build(BuildContext context) {
@@ -118,14 +124,18 @@ class NoteCard extends StatelessWidget {
     return MeCard(
       tone: note.tone,
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => NoteEditorScreen(note: note)),
+        MaterialPageRoute<void>(
+          builder: (_) => NoteEditorScreen(store: store, note: note),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Expanded(child: Text(note.title, style: theme.textTheme.titleMedium)),
+              Expanded(
+                child: Text(note.title, style: theme.textTheme.titleMedium),
+              ),
               if (note.pinned) Icon(Icons.push_pin, size: 16, color: muted),
             ],
           ),
@@ -159,8 +169,9 @@ class NoteCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          decoration:
-                              item.done ? TextDecoration.lineThrough : null,
+                          decoration: item.done
+                              ? TextDecoration.lineThrough
+                              : null,
                         ),
                       ),
                     ),

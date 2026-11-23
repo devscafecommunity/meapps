@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/appearance.dart';
-import '../mock/mock_store.dart';
+import '../data/app_store.dart';
 import 'appearance_sheet.dart';
 import 'calendar_screen.dart';
 import 'new_reminder_sheet.dart';
@@ -12,7 +12,7 @@ import 'reminders_screen.dart';
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key, required this.store, required this.appearance});
 
-  final MockStore store;
+  final AppStore store;
   final AppearanceController appearance;
 
   @override
@@ -27,7 +27,9 @@ class _HomeShellState extends State<HomeShell> {
   void _onFab() {
     if (_index == 1) {
       Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const NoteEditorScreen()),
+        MaterialPageRoute<void>(
+          builder: (_) => NoteEditorScreen(store: widget.store),
+        ),
       );
     } else {
       showNewReminderSheet(context, widget.store);
@@ -61,7 +63,9 @@ class _HomeShellState extends State<HomeShell> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _onFab,
-        icon: Icon(_index == 1 ? Icons.edit_outlined : Icons.add_alert_outlined),
+        icon: Icon(
+          _index == 1 ? Icons.edit_outlined : Icons.add_alert_outlined,
+        ),
         label: Text(_index == 1 ? 'Nova nota' : 'Novo lembrete'),
       ),
       bottomNavigationBar: NavigationBar(

@@ -13,7 +13,10 @@ Future<void> showAppearanceSheet(
       listenable: appearance,
       builder: (context, _) => Padding(
         padding: const EdgeInsets.fromLTRB(
-          MeSpacing.md, 0, MeSpacing.md, MeSpacing.lg,
+          MeSpacing.md,
+          0,
+          MeSpacing.md,
+          MeSpacing.lg,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -24,8 +27,8 @@ Future<void> showAppearanceSheet(
             Text(
               'Mesmo visual, identidade diferente por app.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: MeSpacing.md),
             MeThemeSwatches(
