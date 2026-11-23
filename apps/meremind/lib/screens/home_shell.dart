@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meapps_ui/meapps_ui.dart';
 
 import '../app/appearance.dart';
 import '../data/app_store.dart';
@@ -21,18 +22,19 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
+  DateTime _day = dateOnly(DateTime.now());
 
   static const _titles = ['Agenda', 'Notas', 'Lembretes'];
 
   void _onFab() {
     if (_index == 1) {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => NoteEditorScreen(store: widget.store),
-        ),
-      );
+      openNoteEditor(context, widget.store);
     } else {
-      showNewReminderSheet(context, widget.store);
+      showReminderSheet(
+        context,
+        widget.store,
+        initialDay: _index == 0 ? _day : null,
+      );
     }
   }
 
@@ -55,7 +57,11 @@ class _HomeShellState extends State<HomeShell> {
         builder: (context, _) => IndexedStack(
           index: _index,
           children: [
-            CalendarScreen(store: widget.store),
+            CalendarScreen(
+              store: widget.store,
+              selected: _day,
+              onSelected: (d) => setState(() => _day = d),
+            ),
             NotesScreen(store: widget.store),
             RemindersScreen(store: widget.store),
           ],

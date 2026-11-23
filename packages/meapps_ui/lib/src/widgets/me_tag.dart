@@ -27,9 +27,16 @@ class MeTag extends StatelessWidget {
             Icon(icon, size: 14, color: fg),
             const SizedBox(width: 4),
           ],
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(color: fg),
+          // Long labels ellipsize instead of overflowing narrow cards.
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: fg,
+              ),
+            ),
           ),
         ],
       ),

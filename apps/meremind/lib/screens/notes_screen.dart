@@ -14,27 +14,47 @@ class NotesScreen extends StatefulWidget {
 }
 
 class _NotesScreenState extends State<NotesScreen> {
+  final _search = TextEditingController();
   String? _tag;
+  bool _archived = false;
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final notes = widget.store.notes
-        .where((n) => _tag == null || n.tag == _tag)
-        .toList();
-    final tags = {
-      for (final n in widget.store.notes)
-        if (n.tag != null) n.tag!,
-    };
-    final pinned = notes.where((n) => n.pinned).toList();
-    final others = notes.where((n) => !n.pinned).toList();
+    final store = widget.store;
+    final tags = store.tags;
+    // A tag can disappear (last note with it deleted / retagged).
+    if (_tag != null && !tags.contains(_tag)) _tag = null;
+    final notes = store.filterNotes(
+      tag: _tag,
+      query: _search.text,
+      archived: _archived,
+    );
+    final pinned = _archived ? <Note>[] : notes.where((n) => n.pinned).toList();
+    final others = _archived ? notes : notes.where((n) => !n.pinned).toList();
+    final searching = _search.text.trim().isNotEmpty;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(MeSpacing.md, 0, MeSpacing.md, 96),
       children: [
-        const TextField(
+        TextField(
+          controller: _search,
+          onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
-            hintText: 'Pesquisar notas',
-            prefixIcon: Icon(Icons.search),
+            hintText: _archived ? 'Pesquisar no arquivo' : 'Pesquisar notas',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: searching
+                ? IconButton(
+                    tooltip: 'Limpar',
+                    icon: const Icon(Icons.close),
+                    onPressed: () => setState(_search.clear),
+                  )
+                : null,
           ),
         ),
         const SizedBox(height: MeSpacing.sm),
@@ -55,23 +75,42 @@ class _NotesScreenState extends State<NotesScreen> {
                   onSelected: (_) => setState(() => _tag = t),
                 ),
               ],
+              const SizedBox(width: MeSpacing.sm),
+              FilterChip(
+                avatar: const Icon(Icons.archive_outlined, size: 18),
+                label: const Text('Arquivo'),
+                selected: _archived,
+                onSelected: (v) => setState(() => _archived = v),
+              ),
             ],
           ),
         ),
         if (notes.isEmpty)
-          const MeEmptyState(
-            icon: Icons.sticky_note_2_outlined,
-            title: 'Sem notas',
-            message: 'Toque em "Nova nota" para começar.',
+          MeEmptyState(
+            icon: searching
+                ? Icons.search_off
+                : _archived
+                ? Icons.archive_outlined
+                : Icons.sticky_note_2_outlined,
+            title: searching
+                ? 'Nada encontrado'
+                : _archived
+                ? 'Arquivo vazio'
+                : 'Sem notas',
+            message: searching
+                ? 'Nenhuma nota corresponde à pesquisa.'
+                : _archived
+                ? 'As notas arquivadas aparecem aqui.'
+                : 'Toque em "Nova nota" para começar.',
           ),
         if (pinned.isNotEmpty) ...[
           const MeSectionHeader('FIXADAS'),
-          _Masonry(notes: pinned, store: widget.store),
+          _Masonry(notes: pinned, store: store),
         ],
         if (others.isNotEmpty) ...[
           if (pinned.isNotEmpty) const MeSectionHeader('OUTRAS'),
           if (pinned.isEmpty) const SizedBox(height: MeSpacing.md),
-          _Masonry(notes: others, store: widget.store),
+          _Masonry(notes: others, store: store),
         ],
       ],
     );
@@ -120,14 +159,11 @@ class NoteCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final muted = note.tone.foreground(scheme).withValues(alpha: 0.7);
+    final reminder = store.reminderFor(note.id)?.when;
 
     return MeCard(
       tone: note.tone,
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => NoteEditorScreen(store: store, note: note),
-        ),
-      ),
+      onTap: () => openNoteEditor(context, store, note: note),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -185,10 +221,9 @@ class NoteCard extends StatelessWidget {
             runSpacing: 6,
             children: [
               if (note.tag != null) MeTag(label: note.tag!, color: muted),
-              if (note.reminder != null)
+              if (reminder != null)
                 MeTag(
-                  label:
-                      '${formatDayLabel(note.reminder!)} ${formatTime(note.reminder!)}',
+                  label: '${formatDayLabel(reminder)} ${formatTime(reminder)}',
                   icon: Icons.notifications_active_outlined,
                   color: scheme.tertiary,
                 ),
