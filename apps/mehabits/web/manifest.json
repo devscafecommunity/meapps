@@ -1,11 +1,11 @@
 {
-    "name": "mehabits",
-    "short_name": "mehabits",
+    "name": "MeHabits",
+    "short_name": "MeHabits",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Registo de hábitos, local first.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
