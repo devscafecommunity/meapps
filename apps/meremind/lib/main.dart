@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:meapps_ui/meapps_ui.dart';
 
-import 'app/appearance.dart';
 import 'data/app_store.dart';
 import 'data/database.dart';
 import 'screens/home_shell.dart';
@@ -25,7 +24,7 @@ class MeRemindApp extends StatefulWidget {
 }
 
 class _MeRemindAppState extends State<MeRemindApp> {
-  final _appearance = AppearanceController();
+  final _appearance = AppearanceController(defaultTheme: MeAppTheme.meremind);
   late final AppDatabase _db = widget.database ?? AppDatabase.open();
   late final AppStore _store = AppStore(
     _db,
@@ -53,27 +52,11 @@ class _MeRemindAppState extends State<MeRemindApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: _appearance,
-      builder: (context, _) => MaterialApp(
-        title: 'MeRemind',
-        debugShowCheckedModeBanner: false,
-        theme: _appearance.theme.light(),
-        darkTheme: _appearance.theme.dark(),
-        themeMode: _appearance.mode,
-        locale: const Locale('pt', 'PT'),
-        supportedLocales: const [Locale('pt', 'PT')],
-        localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        home: FutureBuilder<void>(
-          future: _ready,
-          builder: (context, snap) =>
-              snap.connectionState == ConnectionState.done
-              ? HomeShell(store: _store, appearance: _appearance)
-              : const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                ),
-        ),
-      ),
+    return MeApp(
+      title: 'MeRemind',
+      appearance: _appearance,
+      ready: _ready,
+      home: (_) => HomeShell(store: _store, appearance: _appearance),
     );
   }
 }

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
-import '../app/appearance.dart';
 import '../data/app_store.dart';
-import 'appearance_sheet.dart';
 import 'calendar_screen.dart';
 import 'new_reminder_sheet.dart';
 import 'note_editor_screen.dart';

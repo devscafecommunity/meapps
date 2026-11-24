@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
 import '../data/app_store.dart';
-import '../widgets/pick_date_time.dart';
 import 'note_editor_screen.dart';
 
 /// Creates a reminder, or edits [reminder] when given. [initialDay] preselects
@@ -110,14 +109,10 @@ class _ReminderSheetState extends State<_ReminderSheet> {
     Navigator.pop(context);
     final removed = await widget.store.deleteReminder(widget.existing!.id);
     if (removed == null) return;
-    messenger.showSnackBar(
-      SnackBar(
-        content: const Text('Lembrete apagado'),
-        action: SnackBarAction(
-          label: 'Desfazer',
-          onPressed: () => widget.store.saveReminder(removed),
-        ),
-      ),
+    showUndoSnackBar(
+      messenger,
+      'Lembrete apagado',
+      () => widget.store.saveReminder(removed),
     );
   }
 

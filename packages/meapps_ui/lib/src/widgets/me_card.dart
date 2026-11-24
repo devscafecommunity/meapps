@@ -23,6 +23,23 @@ enum MeTone {
         secondary => s.onSecondaryContainer,
         tertiary => s.onTertiaryContainer,
       };
+
+  /// Colour of a small swatch or avatar. Unlike [background], the plain tone
+  /// gets a tinted surface so it still stands out on top of a card.
+  Color swatch(ColorScheme s) =>
+      this == plain ? s.surfaceContainerHighest : background(s);
+
+  /// Content colour on [swatch].
+  Color onSwatch(ColorScheme s) =>
+      this == plain ? s.onSurfaceVariant : foreground(s);
+
+  /// Name shown to the user (tooltips, accessibility).
+  String get label => switch (this) {
+        plain => 'Neutra',
+        primary => 'Principal',
+        secondary => 'Secundária',
+        tertiary => 'Destaque',
+      };
 }
 
 class MeCard extends StatelessWidget {

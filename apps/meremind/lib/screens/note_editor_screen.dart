@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
 import '../data/app_store.dart';
-import '../widgets/pick_date_time.dart';
 
 /// How the editor was closed, so the caller can offer "undo".
 enum NoteEditorExit { deleted, archived, unarchived }
@@ -22,29 +21,28 @@ Future<void> openNoteEditor(
   );
   if (exit == null || note == null) return;
 
-  void show(String text, VoidCallback undo) => messenger
-    ..clearSnackBars()
-    ..showSnackBar(
-      SnackBar(
-        content: Text(text),
-        action: SnackBarAction(label: 'Desfazer', onPressed: undo),
-      ),
-    );
-
   switch (exit) {
     case NoteEditorExit.deleted:
       final deleted = await store.deleteNote(note.id);
       if (deleted != null) {
-        show('Nota apagada', () => store.restoreNote(deleted));
+        showUndoSnackBar(
+          messenger,
+          'Nota apagada',
+          () => store.restoreNote(deleted),
+        );
       }
     case NoteEditorExit.archived || NoteEditorExit.unarchived:
       final archived = exit == NoteEditorExit.archived;
-      show(archived ? 'Nota arquivada' : 'Nota restaurada', () {
-        final current = store.noteById(note.id);
-        if (current != null) {
-          store.saveNote(current.copyWith(archived: !archived));
-        }
-      });
+      showUndoSnackBar(
+        messenger,
+        archived ? 'Nota arquivada' : 'Nota restaurada',
+        () {
+          final current = store.noteById(note.id);
+          if (current != null) {
+            store.saveNote(current.copyWith(archived: !archived));
+          }
+        },
+      );
   }
 }
 
@@ -228,77 +226,37 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   Future<void> _pickTone() async {
     final tone = await showModalBottomSheet<MeTone>(
       context: context,
-      builder: (context) {
-        final scheme = Theme.of(context).colorScheme;
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(
-            MeSpacing.md,
-            0,
-            MeSpacing.md,
-            MeSpacing.lg,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Cor', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: MeSpacing.md),
-              Row(
-                children: [
-                  for (final t in MeTone.values)
-                    Padding(
-                      padding: const EdgeInsets.only(right: MeSpacing.md),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => Navigator.pop(context, t),
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: t.background(scheme),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: t == _tone
-                                  ? scheme.primary
-                                  : scheme.outlineVariant,
-                              width: t == _tone ? 3 : 1,
-                            ),
-                          ),
-                          child: t == _tone
-                              ? Icon(Icons.check, color: t.foreground(scheme))
-                              : null,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (context) => Padding(
+        padding: const EdgeInsets.fromLTRB(
+          MeSpacing.md,
+          0,
+          MeSpacing.md,
+          MeSpacing.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Cor', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: MeSpacing.md),
+            MeTonePicker(
+              selected: _tone,
+              onChanged: (t) => Navigator.pop(context, t),
+            ),
+          ],
+        ),
+      ),
     );
     if (tone != null) setState(() => _tone = tone);
   }
 
   Future<void> _confirmDelete() async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Apagar nota?'),
-        content: const Text('Os lembretes desta nota também são apagados.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Apagar'),
-          ),
-        ],
-      ),
+    final ok = await confirmDelete(
+      context,
+      title: 'Apagar nota?',
+      message: 'Os lembretes desta nota também são apagados.',
     );
-    if (ok != true || !mounted) return;
+    if (!ok || !mounted) return;
     _discard = true;
     Navigator.pop(context, NoteEditorExit.deleted);
   }

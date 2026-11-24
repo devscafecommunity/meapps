@@ -27,9 +27,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   DateTime get _selected => widget.selected;
 
-  void _shift(int delta) =>
-      setState(() => _month = DateTime(_month.year, _month.month + delta));
-
   void _today() {
     final today = dateOnly(DateTime.now());
     setState(() => _month = DateTime(today.year, today.month));
@@ -38,7 +35,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final items = widget.store.remindersOn(_selected);
     final label =
         '${capitalize(ptWeekdays[_selected.weekday - 1])}, '
@@ -47,28 +43,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(MeSpacing.md, 0, MeSpacing.md, 96),
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                '${capitalize(ptMonths[_month.month - 1])} ${_month.year}',
-                style: theme.textTheme.titleLarge,
-              ),
-            ),
-            FilledButton.tonal(
-              style: FilledButton.styleFrom(minimumSize: const Size(0, 36)),
-              onPressed: _today,
-              child: const Text('Hoje'),
-            ),
-            IconButton(
-              onPressed: () => _shift(-1),
-              icon: const Icon(Icons.chevron_left),
-            ),
-            IconButton(
-              onPressed: () => _shift(1),
-              icon: const Icon(Icons.chevron_right),
-            ),
-          ],
+        MeMonthHeader(
+          month: _month,
+          onChanged: (m) => setState(() => _month = m),
+          onToday: _today,
         ),
         const SizedBox(height: MeSpacing.sm),
         MeCard(

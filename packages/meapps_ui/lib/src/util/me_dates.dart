@@ -48,3 +48,31 @@ String formatDayLabel(DateTime d, {DateTime? now}) {
   if (diff == -1) return 'Ontem';
   return '${ptWeekdaysShort[d.weekday - 1]}, ${d.day} ${ptMonthsShort[d.month - 1]}';
 }
+
+/// The calendar day [days] days after [d] (negative goes back), at
+/// midnight. DST-safe, unlike adding a [Duration].
+DateTime addDays(DateTime d, int days) =>
+    DateTime(d.year, d.month, d.day + days);
+
+/// Calendar days from [a] to [b] (negative if [b] is earlier), ignoring the
+/// time of day and DST.
+int daysBetween(DateTime a, DateTime b) => DateTime.utc(b.year, b.month, b.day)
+    .difference(DateTime.utc(a.year, a.month, a.day))
+    .inDays;
+
+/// Monday of the week containing [d], at midnight.
+DateTime weekStart(DateTime d) => addDays(dateOnly(d), 1 - d.weekday);
+
+/// First day of the month of [d]: the way the apps name a month.
+DateTime monthOf(DateTime d) => DateTime(d.year, d.month);
+
+/// [month] moved by [delta] months (negative goes back), as its first day.
+DateTime addMonths(DateTime month, int delta) =>
+    DateTime(month.year, month.month + delta);
+
+bool isSameMonth(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month;
+
+/// "novembro 2026" (use [capitalize] for a title).
+String formatMonth(DateTime month) =>
+    '${ptMonths[month.month - 1]} ${month.year}';
