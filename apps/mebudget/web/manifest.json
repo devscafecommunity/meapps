@@ -1,11 +1,11 @@
 {
-    "name": "mebudget",
-    "short_name": "mebudget",
+    "name": "MeBudget",
+    "short_name": "MeBudget",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Orçamento mensal pessoal, local first.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
