@@ -5,6 +5,7 @@ Suite de apps simples do dia a dia em Flutter, **local first**.
 ```
 packages/meapps_ui   design system partilhado (tokens, MeAppTheme, widgets)
 apps/meremind        calendario + notas + lembretes
+apps/metasks         listas de tarefas (hoje, proximas, listas)
 apps/mebudget        orcamento mensal: receitas, despesas e categorias
 ```
 
@@ -33,3 +34,26 @@ As apps guardam os dados com Drift (SQLite). Na web isso precisa de
 3. Definir um `MeAppTheme` novo em `meapps_ui`.
 4. Abrir a base com `driftDatabase(name: ..., web: DriftWebOptions(...))`
    como as outras apps e correr `tool/web_assets.sh`.
+
+## Release Android
+As quatro apps assinam os builds de release com a mesma chave, que fica
+**fora do repositório**. Sem ela, o build de release usa a chave de debug
+(serve para testar, não para distribuir).
+
+1. Criar a keystore uma vez e guardar uma cópia num gestor de passwords
+   (sem ela não é possível publicar atualizações; quem instalou teria de
+   desinstalar e perder os dados locais):
+   ```bash
+   mkdir -p ~/.config/meapps
+   keytool -genkeypair -v -keystore ~/.config/meapps/upload-keystore.jks \
+     -alias meapps -keyalg RSA -keysize 2048 -validity 10000
+   ```
+2. Criar `~/.config/meapps/key.properties` (ou apontar
+   `MEAPPS_KEY_PROPERTIES` para outro caminho):
+   ```properties
+   storeFile=/caminho/absoluto/para/upload-keystore.jks
+   storePassword=...
+   keyAlias=meapps
+   keyPassword=...
+   ```
+3. `cd apps/<app> && flutter build apk --release`
