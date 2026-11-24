@@ -15,19 +15,11 @@ Future<void> toggleReminder(
   final previous = await store.toggle(r);
   final now = store.reminders.where((e) => e.id == r.id).firstOrNull;
   if (now == null || now.done || previous.repeat == Repeat.never) return;
-  messenger
-    ..clearSnackBars()
-    ..showSnackBar(
-      SnackBar(
-        content: Text(
-          'Próximo: ${formatDayLabel(now.when)} · ${formatTime(now.when)}',
-        ),
-        action: SnackBarAction(
-          label: 'Desfazer',
-          onPressed: () => store.saveReminder(previous),
-        ),
-      ),
-    );
+  showUndoSnackBar(
+    messenger,
+    'Próximo: ${formatDayLabel(now.when)} · ${formatTime(now.when)}',
+    () => store.saveReminder(previous),
+  );
 }
 
 Future<void> deleteReminderWithUndo(
@@ -38,17 +30,11 @@ Future<void> deleteReminderWithUndo(
   final messenger = ScaffoldMessenger.of(context);
   final removed = await store.deleteReminder(r.id);
   if (removed == null) return;
-  messenger
-    ..clearSnackBars()
-    ..showSnackBar(
-      SnackBar(
-        content: const Text('Lembrete apagado'),
-        action: SnackBarAction(
-          label: 'Desfazer',
-          onPressed: () => store.saveReminder(removed),
-        ),
-      ),
-    );
+  showUndoSnackBar(
+    messenger,
+    'Lembrete apagado',
+    () => store.saveReminder(removed),
+  );
 }
 
 /// A reminder row that can be toggled, tapped to edit and swiped to delete.

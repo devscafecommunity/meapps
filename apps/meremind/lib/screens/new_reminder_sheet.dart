@@ -109,14 +109,10 @@ class _ReminderSheetState extends State<_ReminderSheet> {
     Navigator.pop(context);
     final removed = await widget.store.deleteReminder(widget.existing!.id);
     if (removed == null) return;
-    messenger.showSnackBar(
-      SnackBar(
-        content: const Text('Lembrete apagado'),
-        action: SnackBarAction(
-          label: 'Desfazer',
-          onPressed: () => widget.store.saveReminder(removed),
-        ),
-      ),
+    showUndoSnackBar(
+      messenger,
+      'Lembrete apagado',
+      () => widget.store.saveReminder(removed),
     );
   }
 

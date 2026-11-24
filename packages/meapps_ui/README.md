@@ -9,8 +9,9 @@ e só o `MeAppTheme` muda (seed, accent e nome).
 | --- | --- |
 | Tema | `MeAppTheme` (`meremind`, `metasks`, `mebudget`, `mehabits`), `MeSpacing`, `MeRadius` |
 | App | `MeApp` (MaterialApp com pt_PT, tema e loading inicial), `AppearanceController`, `showAppearanceSheet` |
-| Widgets | `MeCard` + `MeTone`, `MeTag`, `MeEmptyState`, `MeSectionHeader`, `MeMonthGrid`, `MeThemeSwatches` |
-| Utilitários | datas em pt (`formatDayLabel`, `formatAgo`, `formatTime`, `isSameDay`, `dateOnly`), `pickDate`, `pickDateTime` |
+| Feedback | `showUndoSnackBar` ("Desfazer"), `confirmDelete` (Cancelar / Apagar) |
+| Widgets | `MeCard` + `MeTone` (`label`, `swatch`), `MeTonePicker`, `MeTag`, `MeEmptyState`, `MeSectionHeader`, `MeMonthGrid`, `MeMonthHeader`, `MeThemeSwatches` |
+| Utilitários | datas em pt (`formatDayLabel`, `formatAgo`, `formatTime`, `formatMonth`, `isSameDay`, `dateOnly`), aritmética de datas sem problemas de DST (`addDays`, `daysBetween`, `weekStart`, `monthOf`, `addMonths`, `isSameMonth`), `pickDate`, `pickDateTime` |
 
 ## Uso típico
 
