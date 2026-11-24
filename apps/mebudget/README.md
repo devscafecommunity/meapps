@@ -49,3 +49,16 @@ flutter run -d linux
 
 Ao mudar o schema: subir `schemaVersion`, acrescentar o passo em `onUpgrade` e
 um teste de migração.
+
+## Web
+
+Na web os dados ficam no armazenamento do browser (OPFS ou IndexedDB, o
+Drift escolhe o melhor disponível) através de `web/sqlite3.wasm` e
+`web/drift_worker.js`. Os dois ficheiros são gerados por `tool/web_assets.sh`
+na raiz e têm de ser atualizados sempre que o `drift` ou o `sqlite3` mudam
+de versão no `pubspec.lock`.
+
+```bash
+flutter run -d chrome
+flutter build web
+```
