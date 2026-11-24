@@ -9,3 +9,4 @@ workspace:
   - apps/meremind
   - apps/metasks
   - apps/mebudget
+  - apps/mehabits

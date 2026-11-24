@@ -7,6 +7,7 @@ packages/meapps_ui   design system partilhado (tokens, MeAppTheme, widgets)
 apps/meremind        calendario + notas + lembretes
 apps/metasks         listas de tarefas (hoje, proximas, listas)
 apps/mebudget        orcamento mensal: receitas, despesas e categorias
+apps/mehabits        habitos diarios + sequencias + progresso
 ```
 
 Pub workspace: `flutter pub get` na raiz resolve tudo.
