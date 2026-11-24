@@ -154,10 +154,7 @@ typedef DeletedList = ({TaskList list, List<String> movedTaskIds});
 String newId(String prefix) =>
     '$prefix${DateTime.now().microsecondsSinceEpoch}';
 
-DateTime _day(int offset) {
-  final n = DateTime.now();
-  return DateTime(n.year, n.month, n.day + offset);
-}
+DateTime _day(int offset) => addDays(DateTime.now(), offset);
 
 // --- Demo seed (first launch only) -------------------------------------
 
@@ -466,8 +463,7 @@ class AppStore extends ChangeNotifier {
 
   /// Pending tasks from tomorrow on, one group per day, then the undated.
   List<DayGroup> upcoming({DateTime? now}) {
-    final n = now ?? DateTime.now();
-    final tomorrow = DateTime(n.year, n.month, n.day + 1);
+    final tomorrow = addDays(now ?? DateTime.now(), 1);
     final byDay = SplayTreeMap<DateTime, List<Task>>();
     final undated = <Task>[];
     for (final t in _pending((_) => true)) {

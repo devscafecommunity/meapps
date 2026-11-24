@@ -3,7 +3,6 @@ import 'package:meapps_ui/meapps_ui.dart';
 
 import '../data/app_store.dart';
 import '../widgets/task_tile.dart';
-import '../widgets/undo_snack_bar.dart';
 import 'list_sheet.dart';
 import 'task_sheet.dart';
 
@@ -31,27 +30,14 @@ class _ListScreenState extends State<ListScreen> {
 
   Future<void> _confirmDelete(TaskList list) async {
     final store = widget.store;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Apagar lista?'),
-        content: Text(
+    final ok = await confirmDelete(
+      context,
+      title: 'Apagar lista?',
+      message:
           'As tarefas de "${list.name}" passam para '
           '"${store.inbox.name}".',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Apagar'),
-          ),
-        ],
-      ),
     );
-    if (ok != true || !mounted) return;
+    if (!ok || !mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     Navigator.pop(context);
     final deleted = await store.deleteList(list.id);

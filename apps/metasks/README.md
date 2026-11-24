@@ -26,7 +26,7 @@ Listas de tarefas — local first (SQLite via Drift), sem conta nem nuvem.
 lib/data/database.dart           schema Drift (v1)
 lib/data/app_store.dart          modelos + AppStore (memória + escrita em SQLite)
 lib/screens/                     ecrãs (Hoje, Próximas, Listas, lista) e sheets
-lib/widgets/                     TaskTile, TaskSection, snackbar com "Desfazer"
+lib/widgets/                     TaskTile, TaskSection
 ```
 
 O `AppStore` é a única fonte de verdade: cada alteração atualiza a memória,

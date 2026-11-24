@@ -39,7 +39,7 @@ class _HomeShellState extends State<HomeShell> {
       widget.store,
       initialDue: switch (_index) {
         0 => today,
-        1 => DateTime(today.year, today.month, today.day + 1),
+        1 => addDays(today, 1),
         _ => null,
       },
     );

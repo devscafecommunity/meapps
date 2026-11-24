@@ -83,9 +83,9 @@ class _TaskSheetState extends State<_TaskSheet> {
   List<_Quick> _quickOptions() {
     final n = DateTime.now();
     return [
-      _Quick('Hoje', DateTime(n.year, n.month, n.day)),
-      _Quick('Amanhã', DateTime(n.year, n.month, n.day + 1)),
-      _Quick('Próxima semana', DateTime(n.year, n.month, n.day + 7)),
+      _Quick('Hoje', dateOnly(n)),
+      _Quick('Amanhã', addDays(n, 1)),
+      _Quick('Próxima semana', addDays(n, 7)),
     ];
   }
 

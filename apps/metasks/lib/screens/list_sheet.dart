@@ -3,14 +3,6 @@ import 'package:meapps_ui/meapps_ui.dart';
 
 import '../data/app_store.dart';
 
-/// Names shown as tooltips on the colour swatches.
-const toneNames = {
-  MeTone.plain: 'Neutra',
-  MeTone.primary: 'Principal',
-  MeTone.secondary: 'Secundária',
-  MeTone.tertiary: 'Destaque',
-};
-
 /// Creates a list, or renames / recolours [list] when given.
 Future<void> showListSheet(
   BuildContext context,
@@ -67,7 +59,6 @@ class _ListSheetState extends State<_ListSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
         MeSpacing.md,
@@ -100,37 +91,9 @@ class _ListSheetState extends State<_ListSheet> {
           const SizedBox(height: MeSpacing.md),
           Text('Cor', style: theme.textTheme.labelLarge),
           const SizedBox(height: MeSpacing.sm),
-          Row(
-            children: [
-              for (final t in MeTone.values)
-                Padding(
-                  padding: const EdgeInsets.only(right: MeSpacing.md),
-                  child: Tooltip(
-                    message: toneNames[t],
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: () => setState(() => _tone = t),
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: t.background(scheme),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: t == _tone
-                                ? scheme.primary
-                                : scheme.outlineVariant,
-                            width: t == _tone ? 3 : 1,
-                          ),
-                        ),
-                        child: t == _tone
-                            ? Icon(Icons.check, color: t.foreground(scheme))
-                            : null,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+          MeTonePicker(
+            selected: _tone,
+            onChanged: (t) => setState(() => _tone = t),
           ),
           const SizedBox(height: MeSpacing.lg),
           SizedBox(

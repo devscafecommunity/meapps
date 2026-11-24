@@ -3,7 +3,6 @@ import 'package:meapps_ui/meapps_ui.dart';
 
 import '../data/app_store.dart';
 import '../screens/task_sheet.dart';
-import 'undo_snack_bar.dart';
 
 extension PriorityColor on Priority {
   /// Marker colour; `null` for tasks without priority.
