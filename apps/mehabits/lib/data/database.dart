@@ -53,8 +53,18 @@ class Settings extends Table {
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
-  /// On-device database (SQLite file in the app documents directory).
-  factory AppDatabase.open() => AppDatabase(driftDatabase(name: 'mehabits'));
+  /// On-device database: a SQLite file in the app documents directory, or
+  /// on the web the browser's storage (OPFS or IndexedDB) through the
+  /// `sqlite3.wasm` and `drift_worker.js` files in `web/`.
+  factory AppDatabase.open() => AppDatabase(
+    driftDatabase(
+      name: 'mehabits',
+      web: DriftWebOptions(
+        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+        driftWorker: Uri.parse('drift_worker.js'),
+      ),
+    ),
+  );
 
   bool _created = false;
 
