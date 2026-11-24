@@ -8,3 +8,4 @@ workspace:
   - packages/meapps_ui
   - apps/meremind
   - apps/metasks
+  - apps/mebudget
