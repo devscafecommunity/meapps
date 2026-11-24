@@ -7,4 +7,6 @@ environment:
 workspace:
   - packages/meapps_ui
   - apps/meremind
+  - apps/metasks
+  - apps/mebudget
   - apps/mehabits
