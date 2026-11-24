@@ -32,19 +32,13 @@ class HabitDetailScreen extends StatefulWidget {
 class _HabitDetailScreenState extends State<HabitDetailScreen> {
   final DateTime _today = dateOnly(DateTime.now());
   late DateTime _selected = _today;
-  late DateTime _month = DateTime(_today.year, _today.month);
-
-  bool get _isCurrentMonth =>
-      _month.year == _today.year && _month.month == _today.month;
-
-  void _shift(int delta) =>
-      setState(() => _month = DateTime(_month.year, _month.month + delta));
+  late DateTime _month = monthOf(_today);
 
   void _select(DateTime d) {
     if (d.isAfter(_today)) return;
     setState(() {
       _selected = d;
-      _month = DateTime(d.year, d.month);
+      _month = monthOf(d);
     });
   }
 
@@ -130,25 +124,13 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
           ),
         ),
         const SizedBox(height: MeSpacing.md),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                '${capitalize(ptMonths[_month.month - 1])} ${_month.year}',
-                style: theme.textTheme.titleLarge,
-              ),
-            ),
-            IconButton(
-              tooltip: 'Mês anterior',
-              onPressed: () => _shift(-1),
-              icon: const Icon(Icons.chevron_left),
-            ),
-            IconButton(
-              tooltip: 'Mês seguinte',
-              onPressed: _isCurrentMonth ? null : () => _shift(1),
-              icon: const Icon(Icons.chevron_right),
-            ),
-          ],
+        MeMonthHeader(
+          month: _month,
+          onChanged: (m) => setState(() => _month = m),
+          lastMonth: _today,
+          onToday: isSameMonth(_month, _today)
+              ? null
+              : () => setState(() => _month = monthOf(_today)),
         ),
         const SizedBox(height: MeSpacing.sm),
         MeCard(

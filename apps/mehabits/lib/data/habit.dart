@@ -125,21 +125,6 @@ class Habit {
 /// Check-ins of one habit: count per day (keys are [dateOnly] values).
 typedef DayCounts = Map<DateTime, int>;
 
-/// [d] moved by [days] calendar days (DST-safe, unlike adding a Duration).
-DateTime addDays(DateTime d, int days) =>
-    DateTime(d.year, d.month, d.day + days);
-
-/// Calendar days from [a] to [b] (negative if [b] is earlier), ignoring the
-/// time of day and DST.
-int daysBetween(DateTime a, DateTime b) => DateTime.utc(
-  b.year,
-  b.month,
-  b.day,
-).difference(DateTime.utc(a.year, a.month, a.day)).inDays;
-
-/// Monday of the week containing [d].
-DateTime weekStart(DateTime d) => addDays(dateOnly(d), 1 - d.weekday);
-
 /// `yyyy-mm-dd`, the storage format of a calendar day.
 String dayKey(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-'

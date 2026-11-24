@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
-import '../data/habit.dart';
-
 /// One week (Monday first) of selectable days with previous/next week
 /// navigation. Days after [today] cannot be picked. Stateless: the host owns
 /// the [selected] day, and the visible week is the one containing it.

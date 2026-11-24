@@ -16,13 +16,6 @@ Future<void> showHabitSheet(
   );
 }
 
-const _toneLabels = {
-  MeTone.plain: 'Neutra',
-  MeTone.primary: 'Principal',
-  MeTone.secondary: 'Suave',
-  MeTone.tertiary: 'Destaque',
-};
-
 class _HabitSheet extends StatefulWidget {
   const _HabitSheet({required this.store, this.existing});
 
@@ -141,24 +134,10 @@ class _HabitSheetState extends State<_HabitSheet> {
             ],
           ),
           label('Cor'),
-          Wrap(
-            spacing: MeSpacing.sm,
-            children: [
-              for (final t in MeTone.values)
-                IconButton(
-                  tooltip: 'Cor ${_toneLabels[t]}',
-                  onPressed: () => setState(() => _tone = t),
-                  style: IconButton.styleFrom(
-                    backgroundColor: t.background(scheme),
-                    foregroundColor: t.foreground(scheme),
-                    side: BorderSide(
-                      color: t == _tone ? scheme.onSurface : scheme.outline,
-                      width: t == _tone ? 2 : 1,
-                    ),
-                  ),
-                  icon: Icon(t == _tone ? Icons.check : _icon.icon),
-                ),
-            ],
+          MeTonePicker(
+            selected: _tone,
+            onChanged: (t) => setState(() => _tone = t),
+            icon: _icon.icon,
           ),
           label('Dias'),
           Wrap(

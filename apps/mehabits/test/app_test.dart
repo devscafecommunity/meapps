@@ -70,7 +70,7 @@ void main() {
     expect(find.text('Novo hábito'), findsNWidgets(2));
 
     await tester.enterText(find.byType(TextField), 'Correr 5 km');
-    for (final tip in ['Corrida', 'Cor Destaque', 'Mais', 'Mais', 'Menos']) {
+    for (final tip in ['Corrida', 'Destaque', 'Mais', 'Mais', 'Menos']) {
       await tester.tap(find.byTooltip(tip));
       await tester.pump();
     }
@@ -282,8 +282,28 @@ void main() {
       ),
       findsOneWidget,
     );
+    final backToday = find.widgetWithText(FilledButton, 'Hoje');
+    expect(backToday, findsOneWidget);
     await tester.tap(find.byTooltip('Mês seguinte'));
     await tester.pumpAndSettle();
+    expect(backToday, findsNothing);
+
+    // Two months back, "Hoje" returns to the current month.
+    await tester.tap(find.byTooltip('Mês anterior'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Mês anterior'));
+    await tester.pumpAndSettle();
+    await tester.tap(backToday);
+    await tester.pumpAndSettle();
+    expect(backToday, findsNothing);
+    expect(
+      tester
+          .widget<IconButton>(
+            find.widgetWithIcon(IconButton, Icons.chevron_right),
+          )
+          .onPressed,
+      isNull,
+    );
 
     await tester.tap(find.byTooltip('Editar'));
     await tester.pumpAndSettle();

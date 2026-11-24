@@ -259,17 +259,6 @@ void main() {
       expect(parseDayKey(dayKey(tue)), tue);
     });
 
-    test('calendar arithmetic', () {
-      expect(addDays(day(2026, 12, 31), 1), day(2027, 1, 1));
-      expect(addDays(day(2026, 3, 1), -1), day(2026, 2, 28));
-      expect(weekStart(tue), day(2026, 11, 23));
-      expect(weekStart(day(2026, 11, 29)), day(2026, 11, 23));
-      expect(weekStart(day(2026, 11, 30)), day(2026, 11, 30));
-      expect(daysBetween(day(2026, 3, 1), day(2026, 4, 1)), 31);
-      expect(daysBetween(day(2026, 10, 1), day(2026, 11, 1)), 31);
-      expect(daysBetween(tue, addDays(tue, -7)), -7);
-    });
-
     test('unknown icon names fall back to "Outro"', () {
       expect(HabitIcon.byName('water'), HabitIcon.water);
       expect(HabitIcon.byName('nope'), HabitIcon.other);

@@ -277,17 +277,11 @@ Future<void> setArchivedWithUndo(
 ) async {
   final messenger = ScaffoldMessenger.of(context);
   await store.setArchived(h.id, archived);
-  messenger
-    ..clearSnackBars()
-    ..showSnackBar(
-      SnackBar(
-        content: Text(archived ? 'Hábito arquivado' : 'Hábito desarquivado'),
-        action: SnackBarAction(
-          label: 'Desfazer',
-          onPressed: () => store.setArchived(h.id, !archived),
-        ),
-      ),
-    );
+  showUndoSnackBar(
+    messenger,
+    archived ? 'Hábito arquivado' : 'Hábito desarquivado',
+    () => store.setArchived(h.id, !archived),
+  );
 }
 
 /// Asks for confirmation, deletes the habit with its check-ins and offers
@@ -297,36 +291,18 @@ Future<void> confirmDeleteHabit(
   AppStore store,
   Habit h,
 ) async {
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Apagar hábito?'),
-      content: Text('Os registos de "${h.name}" também são apagados.'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, false),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          child: const Text('Apagar'),
-        ),
-      ],
-    ),
+  final ok = await confirmDelete(
+    context,
+    title: 'Apagar hábito?',
+    message: 'Os registos de "${h.name}" também são apagados.',
   );
-  if (ok != true || !context.mounted) return;
+  if (!ok || !context.mounted) return;
   final messenger = ScaffoldMessenger.of(context);
   final removed = await store.deleteHabit(h.id);
   if (removed == null) return;
-  messenger
-    ..clearSnackBars()
-    ..showSnackBar(
-      SnackBar(
-        content: const Text('Hábito apagado'),
-        action: SnackBarAction(
-          label: 'Desfazer',
-          onPressed: () => store.restoreHabit(removed),
-        ),
-      ),
-    );
+  showUndoSnackBar(
+    messenger,
+    'Hábito apagado',
+    () => store.restoreHabit(removed),
+  );
 }
