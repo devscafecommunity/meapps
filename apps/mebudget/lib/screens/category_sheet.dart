@@ -7,14 +7,6 @@ import '../data/category_icon.dart';
 import '../data/money.dart';
 import '../widgets/category_avatar.dart';
 
-/// Names of the colours a category can take, in [MeTone] order.
-const toneLabels = {
-  MeTone.plain: 'Neutra',
-  MeTone.primary: 'Principal',
-  MeTone.secondary: 'Secundária',
-  MeTone.tertiary: 'Destaque',
-};
-
 /// Creates a category of [kind], or edits [category] when given.
 Future<void> showCategorySheet(
   BuildContext context,
@@ -35,30 +27,17 @@ Future<bool> confirmDeleteCategory(
   BuildContext context,
   AppStore store,
   Category c,
-) async {
+) {
   final count = store.entryCount(c.id);
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Apagar categoria?'),
-      content: Text(switch (count) {
-        0 => 'Esta categoria não tem movimentos.',
-        1 => 'O movimento desta categoria passa para "Outros".',
-        _ => 'Os $count movimentos desta categoria passam para "Outros".',
-      }),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, false),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          child: const Text('Apagar'),
-        ),
-      ],
-    ),
+  return confirmDelete(
+    context,
+    title: 'Apagar categoria?',
+    message: switch (count) {
+      0 => 'Esta categoria não tem movimentos.',
+      1 => 'O movimento desta categoria passa para "Outros".',
+      _ => 'Os $count movimentos desta categoria passam para "Outros".',
+    },
   );
-  return ok ?? false;
 }
 
 class _CategorySheet extends StatefulWidget {
@@ -133,17 +112,11 @@ class _CategorySheetState extends State<_CategorySheet> {
     Navigator.pop(context);
     final deleted = await store.deleteCategory(c.id);
     if (deleted == null) return;
-    messenger
-      ..clearSnackBars()
-      ..showSnackBar(
-        SnackBar(
-          content: const Text('Categoria apagada'),
-          action: SnackBarAction(
-            label: 'Desfazer',
-            onPressed: () => store.restoreCategory(deleted),
-          ),
-        ),
-      );
+    showUndoSnackBar(
+      messenger,
+      'Categoria apagada',
+      () => store.restoreCategory(deleted),
+    );
   }
 
   @override
@@ -246,38 +219,19 @@ class _CategorySheetState extends State<_CategorySheet> {
             runSpacing: MeSpacing.sm,
             children: [
               for (final i in CategoryIcon.values)
-                _Choice(
+                _IconChoice(
+                  icon: i,
                   selected: i == _icon,
-                  color: scheme.surfaceContainerHigh,
                   onTap: () => setState(() => _icon = i),
-                  child: Icon(i.icon, size: 22),
                 ),
             ],
           ),
           const SizedBox(height: MeSpacing.md),
           Text('Cor', style: theme.textTheme.labelLarge),
           const SizedBox(height: MeSpacing.sm),
-          Wrap(
-            spacing: MeSpacing.sm,
-            children: [
-              for (final t in MeTone.values)
-                Tooltip(
-                  message: toneLabels[t],
-                  child: _Choice(
-                    selected: t == _tone,
-                    color: toneBackground(t, scheme),
-                    selectedColor: toneBackground(t, scheme),
-                    onTap: () => setState(() => _tone = t),
-                    child: t == _tone
-                        ? Icon(
-                            Icons.check,
-                            size: 20,
-                            color: toneForeground(t, scheme),
-                          )
-                        : null,
-                  ),
-                ),
-            ],
+          MeTonePicker(
+            selected: _tone,
+            onChanged: (t) => setState(() => _tone = t),
           ),
           if (_kind == EntryKind.expense) ...[
             const SizedBox(height: MeSpacing.md),
@@ -313,29 +267,23 @@ class _CategorySheetState extends State<_CategorySheet> {
   }
 }
 
-/// Round selectable swatch (icon or colour).
-class _Choice extends StatelessWidget {
-  const _Choice({
+/// Round selectable category icon.
+class _IconChoice extends StatelessWidget {
+  const _IconChoice({
+    required this.icon,
     required this.selected,
-    required this.color,
     required this.onTap,
-    this.selectedColor,
-    this.child,
   });
 
+  final CategoryIcon icon;
   final bool selected;
-  final Color color;
-
-  /// Defaults to the primary container.
-  final Color? selectedColor;
   final VoidCallback onTap;
-  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Material(
-      color: selected ? selectedColor ?? scheme.primaryContainer : color,
+      color: selected ? scheme.primaryContainer : scheme.surfaceContainerHigh,
       shape: CircleBorder(
         side: BorderSide(
           width: 2,
@@ -348,13 +296,12 @@ class _Choice extends StatelessWidget {
         child: SizedBox(
           width: 44,
           height: 44,
-          child: IconTheme.merge(
-            data: IconThemeData(
-              color: selected
-                  ? scheme.onPrimaryContainer
-                  : scheme.onSurfaceVariant,
-            ),
-            child: Center(child: child),
+          child: Icon(
+            icon.icon,
+            size: 22,
+            color: selected
+                ? scheme.onPrimaryContainer
+                : scheme.onSurfaceVariant,
           ),
         ),
       ),

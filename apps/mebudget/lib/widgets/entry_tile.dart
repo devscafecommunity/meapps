@@ -16,17 +16,11 @@ Future<void> deleteEntryWithUndo(
 ) async {
   final removed = await store.deleteEntry(e.id);
   if (removed == null) return;
-  messenger
-    ..clearSnackBars()
-    ..showSnackBar(
-      SnackBar(
-        content: const Text('Movimento apagado'),
-        action: SnackBarAction(
-          label: 'Desfazer',
-          onPressed: () => store.restoreEntry(removed),
-        ),
-      ),
-    );
+  showUndoSnackBar(
+    messenger,
+    'Movimento apagado',
+    () => store.restoreEntry(removed),
+  );
 }
 
 /// A movement row: tap to edit, swipe to delete.

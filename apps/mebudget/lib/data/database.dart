@@ -45,6 +45,12 @@ class Entries extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Calendar day as `yyyymmdd`, the storage format of [Entries.day].
+int dayKey(DateTime d) => d.year * 10000 + d.month * 100 + d.day;
+
+DateTime fromDayKey(int key) =>
+    DateTime(key ~/ 10000, key ~/ 100 % 100, key % 100);
+
 /// Small key/value store for preferences (theme, brightness, ...).
 @DataClassName('SettingRow')
 class Settings extends Table {

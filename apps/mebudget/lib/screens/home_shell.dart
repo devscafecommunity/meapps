@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
 import '../data/app_store.dart';
-import '../data/months.dart';
-import '../widgets/month_selector.dart';
 import 'categories_screen.dart';
 import 'category_sheet.dart';
 import 'entries_screen.dart';
@@ -46,6 +44,7 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    final current = monthOf(DateTime.now());
     return Scaffold(
       appBar: AppBar(
         title: Text(_titles[_index]),
@@ -63,9 +62,17 @@ class _HomeShellState extends State<HomeShell> {
         builder: (context, _) => Column(
           children: [
             if (_index < 2)
-              MonthSelector(
-                month: _month,
-                onChanged: (m) => setState(() => _month = m),
+              Padding(
+                // Lines the title up with the cards below.
+                padding: const EdgeInsets.symmetric(horizontal: MeSpacing.md),
+                child: MeMonthHeader(
+                  month: _month,
+                  onChanged: (m) => setState(() => _month = m),
+                  todayLabel: 'Este mês',
+                  onToday: isSameMonth(_month, current)
+                      ? null
+                      : () => setState(() => _month = current),
+                ),
               ),
             Expanded(
               child: IndexedStack(

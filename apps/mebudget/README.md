@@ -14,20 +14,20 @@ Só euros.
   (só despesas). Apagar pede confirmação e passa os movimentos para "Outros"
   do mesmo tipo (com "Desfazer"). "Outros" é fixa e não se apaga.
 - **Novo movimento**: despesa/receita, valor, categoria, data (Hoje, Ontem ou
-  escolher) e nota opcional. O seletor de mês (`‹ novembro 2026 ›`) é comum ao
-  Resumo e aos Movimentos.
+  escolher) e nota opcional. O cabeçalho do mês (`Novembro 2026 [Este mês] ‹ ›`,
+  o `MeMonthHeader` do `meapps_ui`) é comum ao Resumo e aos Movimentos.
 - **Aparência** (paleta + claro/escuro) guardada entre arranques.
 
 ## Estrutura
 
 ```
-lib/data/database.dart        schema Drift (v1): categories, entries, settings
+lib/data/database.dart        schema Drift (v1): categories, entries, settings;
+                              dias sem hora (yyyymmdd)
 lib/data/app_store.dart       modelos + AppStore (memória + escrita em SQLite)
 lib/data/money.dart           formatMoney / parseMoney (cêntimos inteiros)
-lib/data/months.dart          meses e datas sem hora (yyyymmdd)
 lib/data/category_icon.dart   ícones das categorias (enum -> Icons const)
 lib/screens/                  ecrãs e sheets
-lib/widgets/                  EntryTile, CategoryAvatar, MonthSelector, cores
+lib/widgets/                  EntryTile, CategoryAvatar, cores
 ```
 
 O `AppStore` é a única fonte de verdade: cada alteração atualiza a memória,

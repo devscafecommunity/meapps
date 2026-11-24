@@ -6,7 +6,6 @@ import 'package:meapps_ui/meapps_ui.dart';
 import 'package:mebudget/data/app_store.dart';
 import 'package:mebudget/data/category_icon.dart';
 import 'package:mebudget/data/database.dart';
-import 'package:mebudget/data/months.dart';
 import 'package:mebudget/screens/entry_sheet.dart';
 import 'package:mebudget/screens/summary_screen.dart';
 
@@ -556,19 +555,6 @@ void main() {
   });
 
   group('months', () {
-    test('helpers cross year boundaries', () {
-      expect(monthOf(DateTime(2026, 11, 24, 15)), DateTime(2026, 11));
-      expect(addMonths(DateTime(2026, 12), 1), DateTime(2027));
-      expect(addMonths(DateTime(2026, 1), -1), DateTime(2025, 12));
-      expect(
-        isSameMonth(DateTime(2026, 11, 1), DateTime(2026, 11, 30)),
-        isTrue,
-      );
-      expect(isSameMonth(DateTime(2026, 11), DateTime(2025, 11)), isFalse);
-      expect(formatMonth(DateTime(2026, 11)), 'novembro 2026');
-      expect(formatMonth(DateTime(2027, 3)), 'março 2027');
-    });
-
     test('day keys round-trip', () {
       expect(dayKey(DateTime(2026, 11, 3, 23, 59)), 20261103);
       expect(fromDayKey(20261103), DateTime(2026, 11, 3));

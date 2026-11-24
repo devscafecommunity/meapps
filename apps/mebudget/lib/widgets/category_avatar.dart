@@ -4,14 +4,6 @@ import 'package:meapps_ui/meapps_ui.dart';
 import '../data/app_store.dart';
 import '../data/category_icon.dart';
 
-/// Background of a category colour. The plain tone gets a tinted surface so
-/// it still stands out on a card.
-Color toneBackground(MeTone tone, ColorScheme s) =>
-    tone == MeTone.plain ? s.surfaceContainerHighest : tone.background(s);
-
-Color toneForeground(MeTone tone, ColorScheme s) =>
-    tone == MeTone.plain ? s.onSurfaceVariant : tone.foreground(s);
-
 /// Round icon of a category in its colour.
 class CategoryAvatar extends StatelessWidget {
   const CategoryAvatar({
@@ -33,8 +25,8 @@ class CategoryAvatar extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return CircleAvatar(
       radius: radius,
-      backgroundColor: toneBackground(tone, scheme),
-      child: Icon(icon.icon, size: radius, color: toneForeground(tone, scheme)),
+      backgroundColor: tone.swatch(scheme),
+      child: Icon(icon.icon, size: radius, color: tone.onSwatch(scheme)),
     );
   }
 }

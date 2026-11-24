@@ -4,7 +4,6 @@ import 'package:meapps_ui/meapps_ui.dart';
 
 import '../data/app_store.dart';
 import '../data/money.dart';
-import '../data/months.dart';
 import '../widgets/entry_tile.dart';
 
 /// The day a new movement starts on while [month] is on screen: today in the

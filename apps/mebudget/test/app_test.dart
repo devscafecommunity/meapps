@@ -3,14 +3,17 @@ import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:meapps_ui/meapps_ui.dart';
 import 'package:mebudget/data/database.dart';
 import 'package:mebudget/data/money.dart';
-import 'package:mebudget/data/months.dart';
 import 'package:mebudget/main.dart';
 
 void main() {
   late AppDatabase db;
   final thisMonth = monthOf(DateTime.now());
+
+  /// Title of the month header, e.g. "Novembro 2026".
+  String header(DateTime month) => capitalize(formatMonth(month));
 
   Future<void> boot(WidgetTester tester, {AppDatabase? database}) async {
     tester.view.physicalSize = const Size(1080, 2400);
@@ -83,13 +86,14 @@ void main() {
   testWidgets('navigates between the three tabs', (tester) async {
     await boot(tester);
     expect(find.text('Saldo do mês'), findsOneWidget);
-    expect(find.text(formatMonth(thisMonth)), findsOneWidget);
+    expect(find.text(header(thisMonth)), findsOneWidget);
+    expect(find.text('Este mês'), findsNothing);
     expect(find.text('DESPESAS POR CATEGORIA'), findsOneWidget);
     expect(find.text('Novo movimento'), findsOneWidget);
 
     await goTo(tester, 'Movimentos');
     expect(find.widgetWithText(ChoiceChip, 'Todas'), findsOneWidget);
-    expect(find.text(formatMonth(thisMonth)), findsOneWidget);
+    expect(find.text(header(thisMonth)), findsOneWidget);
 
     await goTo(tester, 'Categorias');
     expect(find.text('DESPESAS'), findsOneWidget);
@@ -163,23 +167,23 @@ void main() {
 
     await tester.tap(find.byTooltip('Mês anterior'));
     await tester.pumpAndSettle();
-    expect(find.text(formatMonth(previous)), findsOneWidget);
+    expect(find.text(header(previous)), findsOneWidget);
     expect(find.text('Saldo do mês'), findsOneWidget);
 
     // Back to this month, then one ahead: nothing there yet.
-    await tester.tap(find.byTooltip('Este mês'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Este mês'));
     await tester.pumpAndSettle();
-    expect(find.text(formatMonth(thisMonth)), findsOneWidget);
-    expect(find.byTooltip('Este mês'), findsNothing);
+    expect(find.text(header(thisMonth)), findsOneWidget);
+    expect(find.text('Este mês'), findsNothing);
     await tester.tap(find.byTooltip('Mês seguinte'));
     await tester.pumpAndSettle();
-    expect(find.text(formatMonth(next)), findsOneWidget);
+    expect(find.text(header(next)), findsOneWidget);
     expect(find.text('Sem movimentos'), findsOneWidget);
     expect(find.text('Saldo do mês'), findsNothing);
 
     // The month is shared with Movimentos.
     await goTo(tester, 'Movimentos');
-    expect(find.text(formatMonth(next)), findsOneWidget);
+    expect(find.text(header(next)), findsOneWidget);
     expect(find.text('Sem movimentos'), findsOneWidget);
     expect(
       find.text('Nenhum movimento em ${formatMonth(next)}.'),
@@ -188,7 +192,7 @@ void main() {
 
     // A movement dated today brings the view back to this month.
     await addEntry(tester, amount: '3', note: 'Café', day: 'Hoje');
-    expect(find.text(formatMonth(thisMonth)), findsOneWidget);
+    expect(find.text(header(thisMonth)), findsOneWidget);
     expect(find.text('Café'), findsOneWidget);
     await shutdown(tester);
   });

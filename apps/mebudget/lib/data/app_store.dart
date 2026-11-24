@@ -6,7 +6,6 @@ import 'package:meapps_ui/meapps_ui.dart';
 
 import 'category_icon.dart';
 import 'database.dart';
-import 'months.dart';
 
 /// Whether a movement takes money out (despesa) or brings it in (receita).
 enum EntryKind {
