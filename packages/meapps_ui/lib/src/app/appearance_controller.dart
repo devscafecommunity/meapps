@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:meapps_ui/meapps_ui.dart';
 
-/// Which palette and brightness the app uses. Persisted through [restore]
-/// and [toSettings] (see `AppStore.settings`).
+import '../theme/me_app_theme.dart';
+
+/// Which palette and brightness an app uses. Every app starts on its own
+/// [defaultTheme] and persists the user's choice through [restore] and
+/// [toSettings] (a plain key/value map the app stores however it likes).
 class AppearanceController extends ChangeNotifier {
-  MeAppTheme _theme = MeAppTheme.meremind;
+  AppearanceController({required this.defaultTheme}) : _theme = defaultTheme;
+
+  final MeAppTheme defaultTheme;
+  MeAppTheme _theme;
   ThemeMode _mode = ThemeMode.system;
 
   static const themeKey = 'appearance.theme';
@@ -14,11 +19,13 @@ class AppearanceController extends ChangeNotifier {
   ThemeMode get mode => _mode;
 
   set theme(MeAppTheme v) {
+    if (v == _theme) return;
     _theme = v;
     notifyListeners();
   }
 
   set mode(ThemeMode v) {
+    if (v == _mode) return;
     _mode = v;
     notifyListeners();
   }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:meapps_ui/meapps_ui.dart';
 
-import '../app/appearance.dart';
+import '../tokens.dart';
+import '../widgets/me_theme_swatches.dart';
+import 'appearance_controller.dart';
 
+/// Bottom sheet to pick the palette and light/dark mode. Changes apply
+/// immediately through [appearance].
 Future<void> showAppearanceSheet(
   BuildContext context,
   AppearanceController appearance,

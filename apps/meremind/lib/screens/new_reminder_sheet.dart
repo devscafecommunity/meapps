@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
 import '../data/app_store.dart';
-import '../widgets/pick_date_time.dart';
 import 'note_editor_screen.dart';
 
 /// Creates a reminder, or edits [reminder] when given. [initialDay] preselects

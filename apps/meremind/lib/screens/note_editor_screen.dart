@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:meapps_ui/meapps_ui.dart';
 
 import '../data/app_store.dart';
-import '../widgets/pick_date_time.dart';
 
 /// How the editor was closed, so the caller can offer "undo".
 enum NoteEditorExit { deleted, archived, unarchived }
